@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp"
+    card_view:cardCornerRadius="12dp"
+    card_view:cardElevation="6dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp">
+
+        <!-- Food Image -->
+        <ImageView
+            android:id="@+id/foodImage"
+            android:layout_width="110dp"
+            android:layout_height="110dp"
+            android:background="#DDDDDD"
+            android:scaleType="centerCrop" />
+
+        <!-- Right Side Content -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingStart="12dp">
+
+            <!-- Food Name -->
+            <TextView
+                android:id="@+id/foodName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Food Name"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <!-- Price -->
+            <TextView
+                android:id="@+id/foodPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="₹99"
+                android:textColor="#4CAF50"
+                android:textSize="16sp"
+                android:layout_marginTop="5dp" />
+
+            <!-- ADD / Quantity Section -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <!-- ADD Button -->
+                <Button
+                    android:id="@+id/addButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="ADD"
+                    android:textColor="@android:color/white"
+                    android:backgroundTint="#FF5722" />
+
+                <!-- Quantity Layout (Hidden initially) -->
+                <LinearLayout
+                    android:id="@+id/quantityLayout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:orientation="horizontal"
+                    android:visibility="gone"
+                    android:background="#FF5722"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/minusBtn"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:gravity="center"
+                        android:text="-"
+                        android:textSize="18sp"
+                        android:textColor="@android:color/white"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/qtyText"
+                        android:layout_width="40dp"
+                        android:layout_height="32dp"
+                        android:gravity="center"
+                        android:text="1"
+                        android:textSize="16sp"
+                        android:textColor="@android:color/white" />
+
+                    <TextView
+                        android:id="@+id/plusBtn"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:gravity="center"
+                        android:text="+"
+                        android:textSize="18sp"
+                        android:textColor="@android:color/white"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
