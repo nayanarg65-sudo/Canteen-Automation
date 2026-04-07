@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "519505393819",
+    "firebase_url": "https://canteenapp-61e30-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "canteenapp-61e30",
     "storage_bucket": "canteenapp-61e30.firebasestorage.app"
   },
@@ -19,6 +20,14 @@
           "android_info": {
             "package_name": "com.example.canteenautomation",
             "certificate_hash": "d5201bf831b772be880548d0c75d2d4566e1c506"
+          }
+        },
+        {
+          "client_id": "519505393819-85dt37v9sv9br6hp1qpp9r2uo5bvcpib.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.canteenautomation",
+            "certificate_hash": "d8ad5695dc399ff9cac856cece618f6d340f8d05"
           }
         },
         {

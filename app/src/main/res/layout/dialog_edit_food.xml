@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@color/backgroundColor">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Update Price (₹)"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        android:textColor="@color/primaryColor"
+        android:layout_marginBottom="8dp"/>
+
+    <EditText
+        android:id="@+id/etEditPrice"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="e.g. 50"
+        android:inputType="number"
+        android:paddingHorizontal="16dp"
+        android:background="@drawable/edit_text_rounded"
+        android:layout_marginBottom="20dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Update Image URL"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        android:textColor="@color/primaryColor"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/etEditUrl"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="Paste image link here"
+        android:paddingHorizontal="16dp"
+        android:background="@drawable/edit_text_rounded"
+        android:inputType="textUri" />
+
+</LinearLayout>

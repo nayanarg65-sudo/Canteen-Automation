@@ -14,4 +14,3 @@ public class StudentModel {
         this.email = email;
     }
 }
-

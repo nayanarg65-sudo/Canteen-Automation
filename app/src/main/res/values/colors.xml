@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="primaryColor">#E65100</color>
-    <color name="backgroundColor">#FFF3E0</color>
+    <color name="primaryColor">#FF5722</color> <color name="primaryDark">#E64A19</color> <color name="forest_green">#2D422B</color> <color name="beige_background">#F3EEE3</color>
+    <color name="backgroundColor">#F3EEE3</color>
+    <color name="cardBackground">#F3EEE3</color>
 
-    <color name="category_default">#FFB74D</color>
-    <color name="category_selected">#E65100</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#212121</color>
+    <color name="text_main">#212121</color>
+    <color name="category_default">#D6CFBD</color>
+    <color name="delete_red">#C62828</color>
+
 </resources>

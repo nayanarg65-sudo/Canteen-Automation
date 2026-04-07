@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/canteen_banner_placeholder"/>
+    <foreground android:drawable="@mipmap/canteen_banner_placeholder_foreground"/>
+    <monochrome android:drawable="@mipmap/canteen_banner_placeholder_foreground"/>
+</adaptive-icon>

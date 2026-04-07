@@ -1,109 +1,157 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5">
+    android:orientation="vertical"
+    android:background="@color/backgroundColor"
+    tools:context=".MenuActivity">
 
-    <!-- Main Vertical Layout -->
-    <LinearLayout
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/primaryColor"
+        app:title="Menu"
+        app:titleTextColor="@android:color/white"/>
 
-        <!-- 🔥 Toolbar -->
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/topAppBar"
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="@color/white">
+
+        <androidx.appcompat.widget.SearchView
+            android:id="@+id/searchView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:title="Menu"
-            android:titleTextColor="@android:color/white"
-            android:background="#D32F2F"
-            app:navigationIcon="@drawable/ic_arrow_back"/>
+            app:iconifiedByDefault="false"
+            app:queryHint="Search items..."/>
+    </androidx.cardview.widget.CardView>
 
-        <!-- 🔥 Category Buttons -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:padding="5dp">
+
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center"
-            android:padding="8dp">
+            android:padding="5dp">
 
             <Button
                 android:id="@+id/btnBreakfast"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:text="Breakfast"/>
+                android:text="Breakfast"
+                android:layout_marginEnd="8dp"
+                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"/>
 
             <Button
                 android:id="@+id/btnLunch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:text="Lunch"/>
+                android:text="Lunch"
+                android:layout_marginEnd="8dp"
+                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"/>
 
             <Button
                 android:id="@+id/btnChats"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:text="Chats"/>
+                android:text="Chats"
+                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"/>
         </LinearLayout>
+    </HorizontalScrollView>
 
-        <!-- 🔥 Food List -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView"
+            android:id="@+id/recyclerViewMenu"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
-    </LinearLayout>
+            android:layout_height="match_parent"
+            android:padding="8dp"/>
 
-    <!-- 🔥 DOMINO'S STYLE VIEW CART BAR -->
-    <!-- 🔥 DOMINO'S STYLE VIEW CART BAR -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:visibility="gone"
+            android:indeterminateTint="@color/primaryColor"/>
+
+        <TextView
+            android:id="@+id/txtNoInternet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No Internet Connection"
+            android:layout_centerInParent="true"
+            android:visibility="gone"
+            android:textColor="@color/primaryColor"
+            android:textStyle="bold"/>
+    </RelativeLayout>
+
     <LinearLayout
-        android:id="@+id/viewCartLayout"
+        android:id="@+id/cartLayout"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:layout_alignParentBottom="true"
-        android:background="#E31837"
+        android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:padding="16dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:background="@color/primaryDark"
+        android:elevation="8dp"
         android:visibility="gone">
 
-        <!-- LEFT SIDE → ITEM COUNT -->
         <TextView
-            android:id="@+id/cartItemCountText"
+            android:id="@+id/txtItemCount"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="1 ITEM"
+            android:text="0 Items"
             android:textColor="@android:color/white"
-            android:textStyle="bold"/>
+            android:textStyle="bold"
+            android:textSize="16sp"/>
 
-        <!-- RIGHT SIDE → CART + VIEW CART -->
         <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center">
 
             <ImageView
                 android:layout_width="22dp"
                 android:layout_height="22dp"
                 android:src="@drawable/ic_shopping_cart"
-                android:tint="@android:color/white"
-                android:layout_marginEnd="6dp"/>
+                android:layout_marginEnd="6dp"
+                app:tint="@android:color/white"/>
 
             <TextView
+                android:id="@+id/txtViewCart"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="VIEW CART >"
+                android:text="VIEW CART"
                 android:textColor="@android:color/white"
                 android:textStyle="bold"/>
         </LinearLayout>
-
     </LinearLayout>
 
-</RelativeLayout>
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:background="@android:color/white"
+        app:itemIconTint="@color/primaryColor"
+        app:itemTextColor="@color/primaryColor"
+        app:menu="@menu/bottomnavigation"/>
+
+</LinearLayout>

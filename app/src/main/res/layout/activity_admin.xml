@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:background="@color/backgroundColor">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ADMIN DASHBOARD"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="30dp"
+        android:textColor="@color/primaryColor" />
+
+    <Button
+        android:id="@+id/btnViewOrders"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:text="View Orders"
+        android:backgroundTint="@color/primaryColor"
+        android:layout_marginBottom="20dp"/>
+
+
+    <Button
+        android:id="@+id/btnManageFood"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Manage Food"
+        android:backgroundTint="@color/primaryColor"
+        android:layout_marginTop="10dp"/>
+
+    <Button
+        android:id="@+id/btnAddItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add Item"
+        android:backgroundTint="@color/primaryColor"/>
+
+    <Button
+        android:id="@+id/btnLogout"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:text="Logout"
+        android:backgroundTint="@color/primaryColor"/>
+
+</LinearLayout>

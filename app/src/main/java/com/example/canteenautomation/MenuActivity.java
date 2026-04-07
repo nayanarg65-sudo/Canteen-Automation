@@ -1,156 +1,213 @@
 package com.example.canteenautomation;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
-
+import android.widget.Toast;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.google.android.material.appbar.MaterialToolbar;
-
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
-import java.util.List;
 
-public class MenuActivity extends AppCompatActivity {
+public class MenuActivity extends AppCompatActivity implements FoodAdapter.CartUpdateListener {
 
     RecyclerView recyclerView;
     FoodAdapter adapter;
-    List<FoodModel> foodList;
-
+    ArrayList<FoodModel> allFoodList;
+    ArrayList<FoodModel> foodList;
+    SearchView searchView;
+    LinearLayout cartLayout;
+    TextView txtItemCount, txtNoInternet;
+    ProgressBar progressBar;
+    DatabaseReference database;
+    BottomNavigationView bottomNavigation;
     Button btnBreakfast, btnLunch, btnChats;
-
-    LinearLayout viewCartLayout;
-    TextView cartItemCountText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
 
-        // ==============================
-        // TOOLBAR
-        // ==============================
-        MaterialToolbar toolbar = findViewById(R.id.topAppBar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Menu");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            if (toolbar.getNavigationIcon() != null) {
+                toolbar.getNavigationIcon().setTint(Color.WHITE);
+            }
         }
-
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        // ==============================
-        // RECYCLER VIEW
-        // ==============================
-        recyclerView = findViewById(R.id.recyclerView);
+        recyclerView = findViewById(R.id.recyclerViewMenu);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // ==============================
-        // BUTTONS
-        // ==============================
+        progressBar = findViewById(R.id.progressBar);
+        txtNoInternet = findViewById(R.id.txtNoInternet);
+
+        foodList = new ArrayList<>();
+        allFoodList = new ArrayList<>();
+        adapter = new FoodAdapter(foodList, this);
+        recyclerView.setAdapter(adapter);
+
+        searchView = findViewById(R.id.searchView);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) { filterSearch(query); return false; }
+            @Override
+            public boolean onQueryTextChange(String newText) { filterSearch(newText); return false; }
+        });
+
         btnBreakfast = findViewById(R.id.btnBreakfast);
         btnLunch = findViewById(R.id.btnLunch);
         btnChats = findViewById(R.id.btnChats);
 
-        btnBreakfast.setOnClickListener(v -> loadBreakfast());
-        btnLunch.setOnClickListener(v -> loadLunch());
-        btnChats.setOnClickListener(v -> loadChats());
+        btnBreakfast.setOnClickListener(v -> loadCategory("Breakfast"));
+        btnLunch.setOnClickListener(v -> loadCategory("Lunch"));
+        btnChats.setOnClickListener(v -> loadCategory("Chats"));
 
-        // ==============================
-        // VIEW CART
-        // ==============================
-        viewCartLayout = findViewById(R.id.viewCartLayout);
-        cartItemCountText = findViewById(R.id.cartItemCountText);
+        cartLayout = findViewById(R.id.cartLayout);
+        txtItemCount = findViewById(R.id.txtItemCount);
+        cartLayout.setOnClickListener(v -> startActivity(new Intent(MenuActivity.this, CartActivity.class)));
 
-        viewCartLayout.setOnClickListener(v ->
-                startActivity(new Intent(this, CartActivity.class))
-        );
+        database = FirebaseDatabase.getInstance().getReference("FoodItems");
 
-        // ==============================
-        // 🔥 RECEIVE CATEGORY FROM HOME
-        // ==============================
-        String category = getIntent().getStringExtra("category");
+        checkNetworkAndLoad();
 
-        if (category != null) {
-            switch (category) {
-                case "breakfast":
-                    loadBreakfast();
-                    break;
-                case "lunch":
-                    loadLunch();
-                    break;
-                case "chats":
-                    loadChats();
-                    break;
-                default:
-                    loadBreakfast();
-            }
+        bottomNavigation = findViewById(R.id.bottomNavigation);
+        bottomNavigation.setSelectedItemId(R.id.nav_menu);
+        bottomNavigation.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_home) { startActivity(new Intent(this, HomePageActivity.class)); return true; }
+            if (id == R.id.nav_menu) return true;
+            if (id == R.id.nav_cart) { startActivity(new Intent(this, CartActivity.class)); return true; }
+            return false;
+        });
+    }
+
+    private void checkNetworkAndLoad() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+
+        if (isConnected) {
+            txtNoInternet.setVisibility(View.GONE);
+            loadMenuFromFirebase();
         } else {
-            loadBreakfast(); // default
+            txtNoInternet.setVisibility(View.VISIBLE);
+            Toast.makeText(this, "No internet connection!", Toast.LENGTH_SHORT).show();
         }
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (adapter != null) adapter.notifyDataSetChanged();
+        updateCartBar();
+    }
+
+    private void filterSearch(String text) {
+        ArrayList<FoodModel> filteredList = new ArrayList<>();
+        for (FoodModel item : allFoodList) {
+            if (item.name.toLowerCase().contains(text.toLowerCase())) filteredList.add(item);
+        }
+        foodList.clear();
+        foodList.addAll(filteredList);
+        adapter.notifyDataSetChanged();
+    }
+
+    private void loadMenuFromFirebase() {
+        progressBar.setVisibility(View.VISIBLE);
+        database.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                progressBar.setVisibility(View.GONE);
+                allFoodList.clear();
+                for (DataSnapshot data : snapshot.getChildren()) {
+                    FoodModel item = data.getValue(FoodModel.class);
+                    if (item != null) {
+                        item.id = data.getKey();
+                        allFoodList.add(item);
+                    }
+                }
+
+                String categoryFromHome = getIntent().getStringExtra("SELECTED_CATEGORY");
+                if (categoryFromHome != null) {
+                    loadCategory(categoryFromHome);
+                } else {
+                    loadCategory("Breakfast");
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(MenuActivity.this, "Database Error!", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void loadCategory(String category) {
+        foodList.clear();
+        for (FoodModel item : allFoodList) {
+            if (item.category != null && item.category.equals(category)) foodList.add(item);
+        }
+        updateButtonUI(category);
+        adapter.notifyDataSetChanged();
+        updateCartBar();
+    }
+
+    private void updateButtonUI(String selected) {
+        // Fetching colors from colors.xml
+        int selectedBg = ContextCompat.getColor(this, R.color.primaryColor);
+        int unselectedBg = ContextCompat.getColor(this, R.color.backgroundColor);
+        int white = ContextCompat.getColor(this, R.color.white);
+
+        btnBreakfast.setBackgroundColor(selected.equals("Breakfast") ? selectedBg : unselectedBg);
+        btnBreakfast.setTextColor(selected.equals("Breakfast") ? white : selectedBg);
+
+        btnLunch.setBackgroundColor(selected.equals("Lunch") ? selectedBg : unselectedBg);
+        btnLunch.setTextColor(selected.equals("Lunch") ? white : selectedBg);
+
+        btnChats.setBackgroundColor(selected.equals("Chats") ? selectedBg : unselectedBg);
+        btnChats.setTextColor(selected.equals("Chats") ? white : selectedBg);
+    }
+
+    @Override
+    public void onCartUpdated() { updateCartBar(); }
 
     private void updateCartBar() {
-
-        List<FoodModel> cartItems = CartManager.getCartItems();
-
-        if (cartItems == null || cartItems.isEmpty()) {
-            viewCartLayout.setVisibility(View.GONE);
-            return;
+        int totalItems = 0;
+        if (CartManager.getCartItems() != null) {
+            for (FoodModel item : CartManager.getCartItems()) {
+                totalItems += item.quantity;
+            }
         }
 
-        int itemCount = 0;
-
-        for (FoodModel item : cartItems) {
-            itemCount += item.quantity;
+        if (totalItems > 0) {
+            cartLayout.setVisibility(View.VISIBLE);
+            txtItemCount.setText(totalItems + (totalItems == 1 ? " Item" : " Items"));
+            // Pulling primaryDark from colors.xml
+            cartLayout.setBackgroundColor(ContextCompat.getColor(this, R.color.primaryDark));
+        } else {
+            cartLayout.setVisibility(View.GONE);
         }
-
-        cartItemCountText.setText(itemCount + " ITEMS");
-        viewCartLayout.setVisibility(View.VISIBLE);
-    }
-
-    private void loadBreakfast() {
-        foodList = new ArrayList<>();
-        foodList.add(new FoodModel("Idli", 30, android.R.drawable.ic_menu_gallery));
-        foodList.add(new FoodModel("Dosa", 50, android.R.drawable.ic_menu_gallery));
-        foodList.add(new FoodModel("Poori", 40, android.R.drawable.ic_menu_gallery));
-        foodList.add(new FoodModel("Upma", 35, android.R.drawable.ic_menu_gallery));
-        foodList.add(new FoodModel("Vada", 25, android.R.drawable.ic_menu_gallery));
-
-        adapter = new FoodAdapter(foodList, this::updateCartBar);
-        recyclerView.setAdapter(adapter);
-        updateCartBar();
-    }
-
-    private void loadLunch() {
-        foodList = new ArrayList<>();
-        foodList.add(new FoodModel("Veg Meals", 90, android.R.drawable.ic_menu_gallery));
-        foodList.add(new FoodModel("Fried Rice", 80, android.R.drawable.ic_menu_gallery));
-        foodList.add(new FoodModel("Curd Rice", 60, android.R.drawable.ic_menu_gallery));
-        foodList.add(new FoodModel("Biryani", 120, android.R.drawable.ic_menu_gallery));
-        foodList.add(new FoodModel("Chapathi Combo", 70, android.R.drawable.ic_menu_gallery));
-
-        adapter = new FoodAdapter(foodList, this::updateCartBar);
-        recyclerView.setAdapter(adapter);
-        updateCartBar();
-    }
-
-    private void loadChats() {
-        foodList = new ArrayList<>();
-        foodList.add(new FoodModel("Pani Puri", 30, android.R.drawable.ic_menu_gallery));
-        foodList.add(new FoodModel("Bhel Puri", 35, android.R.drawable.ic_menu_gallery));
-        foodList.add(new FoodModel("Samosa", 20, android.R.drawable.ic_menu_gallery));
-        foodList.add(new FoodModel("Kachori", 25, android.R.drawable.ic_menu_gallery));
-        foodList.add(new FoodModel("Dahi Puri", 40, android.R.drawable.ic_menu_gallery));
-
-        adapter = new FoodAdapter(foodList, this::updateCartBar);
-        recyclerView.setAdapter(adapter);
-        updateCartBar();
     }
 }

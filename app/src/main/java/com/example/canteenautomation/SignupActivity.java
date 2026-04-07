@@ -1,135 +1,101 @@
 package com.example.canteenautomation;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.util.Patterns;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import java.util.HashMap;
 
 public class SignupActivity extends AppCompatActivity {
 
     EditText nameEdit, rollEdit, phoneEdit, emailEdit, passwordEdit;
     Button signupButton;
-
+    TextView backToLogin;
     FirebaseAuth auth;
-    DatabaseReference databaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().hide();
-        }
-
+        if (getSupportActionBar() != null) getSupportActionBar().hide();
         setContentView(R.layout.activity_signup);
 
-        // 🔥 Initialize Firebase Auth
         auth = FirebaseAuth.getInstance();
-
-        // 🔥 Initialize Realtime Database
-        FirebaseDatabase database = FirebaseDatabase.getInstance(
-                "https://canteenapp-61e30-default-rtdb.asia-southeast1.firebasedatabase.app/"
-        );
-
-        databaseReference = database.getReference("Students");
-
-        // Connect XML views
         nameEdit = findViewById(R.id.nameEdit);
         rollEdit = findViewById(R.id.rollEdit);
         phoneEdit = findViewById(R.id.phoneEdit);
         emailEdit = findViewById(R.id.emailEdit);
         passwordEdit = findViewById(R.id.passwordEdit);
         signupButton = findViewById(R.id.signupButton);
+        backToLogin = findViewById(R.id.backToLogin);
 
         signupButton.setOnClickListener(v -> {
-
             String name = nameEdit.getText().toString().trim();
             String roll = rollEdit.getText().toString().trim();
             String phone = phoneEdit.getText().toString().trim();
             String email = emailEdit.getText().toString().trim();
             String password = passwordEdit.getText().toString().trim();
 
-            // 1️⃣ Empty Check
-            if (name.isEmpty() || roll.isEmpty() || phone.isEmpty()
-                    || email.isEmpty() || password.isEmpty()) {
-
-                Toast.makeText(SignupActivity.this,
-                        "All fields are required!",
-                        Toast.LENGTH_SHORT).show();
+            // 1. Check Empty Fields
+            if (name.isEmpty() || roll.isEmpty() || phone.isEmpty() || email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "All fields are required!", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // 2️⃣ Mobile Validation (10 digits only)
-            if (!phone.matches("\\d{10}")) {
-                phoneEdit.setError("Enter valid 10-digit mobile number");
-                phoneEdit.requestFocus();
-                return;
-            }
-
-            // 3️⃣ Email Validation
-            if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                emailEdit.setError("Enter valid email address");
-                emailEdit.requestFocus();
-                return;
-            }
-
-            // 4️⃣ Roll Number Validation
-            if (!roll.matches("^U\\d{2}[A-Z]{2}\\d{2}[A-Z]\\d{4}$")) {
-                rollEdit.setError("Invalid roll number length");
+            // 2. Roll Number Validation (Exact length like U18BP23S0354 is 12 characters)
+            if (roll.length() != 12) {
+                rollEdit.setError("Roll number must be 12 characters!");
                 rollEdit.requestFocus();
                 return;
             }
 
-            // 5️⃣ Password Validation (minimum 6 characters)
+            // 3. Phone Number Validation (10 digits)
+            if (phone.length() != 10) {
+                phoneEdit.setError("Enter a valid 10-digit phone number!");
+                phoneEdit.requestFocus();
+                return;
+            }
+
+            // 4. Email Validation
+            if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                emailEdit.setError("Please enter a valid email address!");
+                emailEdit.requestFocus();
+                return;
+            }
+
+            // 5. Password Validation
             if (password.length() < 6) {
-                passwordEdit.setError("Password must be at least 6 characters");
+                passwordEdit.setError("Password must be at least 6 characters!");
                 passwordEdit.requestFocus();
                 return;
             }
 
-            // 🔥 If all validations pass → continue signup
-            auth.createUserWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(task -> {
+            // Firebase Signup
+            auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    String uid = auth.getCurrentUser().getUid();
+                    HashMap<String, Object> userMap = new HashMap<>();
+                    userMap.put("name", name);
+                    userMap.put("roll", roll);
+                    userMap.put("phone", phone);
+                    userMap.put("email", email);
+                    userMap.put("role", "student");
 
-                        if (task.isSuccessful()) {
-
-                            String uid = auth.getCurrentUser().getUid();
-
-                            StudentModel student = new StudentModel(
-                                    name, roll, phone, email
-                            );
-
-                            databaseReference.child(uid).setValue(student)
-                                    .addOnSuccessListener(unused -> {
-
-                                        Toast.makeText(SignupActivity.this,
-                                                "Signup Successful ✅",
-                                                Toast.LENGTH_SHORT).show();
-
-                                        startActivity(new Intent(
-                                                SignupActivity.this,
-                                                LoginActivity.class
-                                        ));
-                                        finish();
-                                    });
-
-                        } else {
-
-                            Toast.makeText(SignupActivity.this,
-                                    "Signup Failed: " +
-                                            task.getException().getMessage(),
-                                    Toast.LENGTH_LONG).show();
-                        }
-                    });
-
+                    FirebaseDatabase.getInstance().getReference("Users").child(uid).setValue(userMap)
+                            .addOnSuccessListener(unused -> {
+                                Toast.makeText(this, "Account Created ✅", Toast.LENGTH_SHORT).show();
+                                finish();
+                            });
+                } else {
+                    Toast.makeText(this, "Error: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
         });
 
+        backToLogin.setOnClickListener(v -> finish());
     }
 }

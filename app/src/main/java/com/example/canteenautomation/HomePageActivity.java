@@ -2,105 +2,212 @@ package com.example.canteenautomation;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
-import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.chip.Chip;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class HomePageActivity extends AppCompatActivity {
 
-    DrawerLayout drawerLayout;
-    NavigationView navigationView;
-    Toolbar toolbar;
+    CardView cardOrderNow, cardHistory;
+    TextView welcomeText, txtItemCount;
+    LinearLayout cartLayout;
     BottomNavigationView bottomNavigation;
+    Chip chipBreakfast, chipLunch, chipSnacks, chipDrinks;
+    ViewPager2 viewPagerSlider;
 
-    RecyclerView popularRecycler;
+    RecyclerView rvBreakfast, rvLunch, rvChats;
+    HomeFoodAdapter breakfastAdapter, lunchAdapter, chatsAdapter;
+    ArrayList<FoodModel> breakfastList = new ArrayList<>();
+    ArrayList<FoodModel> lunchList = new ArrayList<>();
+    ArrayList<FoodModel> chatsList = new ArrayList<>();
+
+    FirebaseAuth auth;
+    DatabaseReference userRef, foodRef;
+
+    private Handler sliderHandler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getSupportActionBar() != null) getSupportActionBar().hide();
         setContentView(R.layout.activity_home_page);
 
-        drawerLayout = findViewById(R.id.drawerLayout);
-        navigationView = findViewById(R.id.navigationView);
-        toolbar = findViewById(R.id.toolbar);
+        // Firebase Initialization
+        auth = FirebaseAuth.getInstance();
+        FirebaseDatabase database = FirebaseDatabase.getInstance("https://canteenapp-61e30-default-rtdb.asia-southeast1.firebasedatabase.app/");
+        userRef = database.getReference("Users");
+        foodRef = database.getReference("FoodItems");
+
+        // View Binding
+        welcomeText = findViewById(R.id.welcomeText);
+        cardOrderNow = findViewById(R.id.cardOrderNow);
+        cardHistory = findViewById(R.id.cardHistory);
         bottomNavigation = findViewById(R.id.bottomNavigation);
-        popularRecycler = findViewById(R.id.popularRecycler);
+        chipBreakfast = findViewById(R.id.chipBreakfast);
+        chipLunch = findViewById(R.id.chipLunch);
+        chipSnacks = findViewById(R.id.chipSnacks);
+        chipDrinks = findViewById(R.id.chipDrinks);
+        viewPagerSlider = findViewById(R.id.viewPagerSlider);
 
-        setSupportActionBar(toolbar);
+        // Horizontal RecyclerViews
+        rvBreakfast = findViewById(R.id.rvBreakfast);
+        rvLunch = findViewById(R.id.rvLunch);
+        rvChats = findViewById(R.id.rvChats);
 
-        ActionBarDrawerToggle toggle =
-                new ActionBarDrawerToggle(
-                        this,
-                        drawerLayout,
-                        toolbar,
-                        R.string.app_name,
-                        R.string.app_name
-                );
+        setupHorizontalRecyclerViews();
+        fetchUserName();
+        setupSlider();
+        loadFoodFromFirebase();
 
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
+        // Listeners
+        chipBreakfast.setOnClickListener(v -> openMenuWithCategory("Breakfast"));
+        chipLunch.setOnClickListener(v -> openMenuWithCategory("Lunch"));
+        chipSnacks.setOnClickListener(v -> openMenuWithCategory("Chats"));
+        chipDrinks.setOnClickListener(v -> openMenuWithCategory("Beverages"));
 
-        // 🔥 CATEGORY CARD CLICKS
-        findViewById(R.id.breakfastCard).setOnClickListener(v -> {
-            Intent intent = new Intent(this, MenuActivity.class);
-            intent.putExtra("category", "breakfast");
-            startActivity(intent);
-        });
+        cardOrderNow.setOnClickListener(v -> startActivity(new Intent(this, MenuActivity.class)));
+        cardHistory.setOnClickListener(v -> Toast.makeText(this, "Opening Orders...", Toast.LENGTH_SHORT).show());
 
-        findViewById(R.id.lunchCard).setOnClickListener(v -> {
-            Intent intent = new Intent(this, MenuActivity.class);
-            intent.putExtra("category", "lunch");
-            startActivity(intent);
-        });
-
-        findViewById(R.id.chatsCard).setOnClickListener(v -> {
-            Intent intent = new Intent(this, MenuActivity.class);
-            intent.putExtra("category", "chats");
-            startActivity(intent);
-        });
-
-        // Bottom Navigation
+        bottomNavigation.setSelectedItemId(R.id.nav_home);
         bottomNavigation.setOnItemSelectedListener(item -> {
-
-            if (item.getItemId() == R.id.nav_home) return true;
-
-            if (item.getItemId() == R.id.nav_menu) {
+            int id = item.getItemId();
+            if (id == R.id.nav_home) return true;
+            if (id == R.id.nav_menu) {
                 startActivity(new Intent(this, MenuActivity.class));
                 return true;
             }
-
-            if (item.getItemId() == R.id.nav_cart) {
+            if (id == R.id.nav_cart) {
                 startActivity(new Intent(this, CartActivity.class));
                 return true;
             }
-
             return false;
         });
-
-        setupPopularSection();
     }
 
-    private void setupPopularSection() {
+    private void setupHorizontalRecyclerViews() {
+        rvBreakfast.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        rvLunch.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        rvChats.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
-        popularRecycler.setLayoutManager(
-                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        breakfastAdapter = new HomeFoodAdapter(breakfastList);
+        lunchAdapter = new HomeFoodAdapter(lunchList);
+        chatsAdapter = new HomeFoodAdapter(chatsList);
 
-        List<FoodModel> popularList = new ArrayList<>();
-        popularList.add(new FoodModel("Biryani", 120, android.R.drawable.ic_menu_gallery));
-        popularList.add(new FoodModel("Dosa", 50, android.R.drawable.ic_menu_gallery));
-        popularList.add(new FoodModel("Fried Rice", 80, android.R.drawable.ic_menu_gallery));
-        popularList.add(new FoodModel("Pani Puri", 30, android.R.drawable.ic_menu_gallery));
+        rvBreakfast.setAdapter(breakfastAdapter);
+        rvLunch.setAdapter(lunchAdapter);
+        rvChats.setAdapter(chatsAdapter);
+    }
 
-        popularRecycler.setAdapter(new HomeFoodAdapter(popularList));
+    private void loadFoodFromFirebase() {
+        foodRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                breakfastList.clear();
+                lunchList.clear();
+                chatsList.clear();
+
+                // FIXED: Changed children() to getChildren()
+                for (DataSnapshot data : snapshot.getChildren()) {
+                    FoodModel item = data.getValue(FoodModel.class);
+                    if (item != null) {
+                        item.id = data.getKey();
+
+                        // Categorize based on your Firebase "category" field
+                        if ("Breakfast".equals(item.category)) {
+                            breakfastList.add(item);
+                        } else if ("Lunch".equals(item.category)) {
+                            lunchList.add(item);
+                        } else if ("Chats".equals(item.category)) {
+                            chatsList.add(item);
+                        }
+                    }
+                }
+
+                // Refresh the horizontal scrolling lists
+                breakfastAdapter.notifyDataSetChanged();
+                lunchAdapter.notifyDataSetChanged();
+                chatsAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(HomePageActivity.this, "Database Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void fetchUserName() {
+        FirebaseUser user = auth.getCurrentUser();
+        if (user != null) {
+            userRef.child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        String name = snapshot.child("name").getValue(String.class);
+                        welcomeText.setText("Hello, " + (name != null ? name : "Student") + "! 👋");
+                    }
+                }
+                @Override public void onCancelled(@NonNull DatabaseError error) {}
+            });
+        }
+    }
+
+    private void setupSlider() {
+        int[] images = {R.drawable.canteenpic, R.drawable.canteenpic};
+        SliderAdapter adapter = new SliderAdapter(images);
+        viewPagerSlider.setAdapter(adapter);
+        viewPagerSlider.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+                sliderHandler.removeCallbacks(sliderRunnable);
+                sliderHandler.postDelayed(sliderRunnable, 3000);
+            }
+        });
+    }
+
+    private Runnable sliderRunnable = () -> viewPagerSlider.setCurrentItem(viewPagerSlider.getCurrentItem() + 1);
+
+    private void openMenuWithCategory(String category) {
+        Intent intent = new Intent(this, MenuActivity.class);
+        intent.putExtra("SELECTED_CATEGORY", category);
+        startActivity(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(breakfastAdapter != null) breakfastAdapter.notifyDataSetChanged();
+        if(lunchAdapter != null) lunchAdapter.notifyDataSetChanged();
+        if(chatsAdapter != null) chatsAdapter.notifyDataSetChanged();
+        bottomNavigation.setSelectedItemId(R.id.nav_home);
+        sliderHandler.postDelayed(sliderRunnable, 3000);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        sliderHandler.removeCallbacks(sliderRunnable);
     }
 }

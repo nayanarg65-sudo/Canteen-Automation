@@ -3,24 +3,27 @@ package com.example.canteenautomation;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.List;
+import com.bumptech.glide.Glide;
+
+import java.util.ArrayList;
 
 public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder> {
 
-    List<FoodModel> cartList;
-    CartUpdateListener listener;
+    private final ArrayList<FoodModel> cartList;
+    private final OnCartChangeListener listener;
 
-    public interface CartUpdateListener {
-        void onCartUpdated();
+    public interface OnCartChangeListener {
+        void onQuantityChanged();
     }
 
-    public CartAdapter(List<FoodModel> cartList, CartUpdateListener listener) {
+    public CartAdapter(ArrayList<FoodModel> cartList, OnCartChangeListener listener) {
         this.cartList = cartList;
         this.listener = listener;
     }
@@ -35,28 +38,42 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull CartViewHolder holder, int position) {
+        FoodModel item = cartList.get(position);
 
-        FoodModel food = cartList.get(position);
+        holder.txtName.setText(item.name);
+        holder.txtPrice.setText("₹" + item.price);
+        holder.txtQuantity.setText(String.valueOf(item.quantity));
 
-        holder.name.setText(food.name);
-        holder.price.setText("₹" + (food.price * food.quantity));
-        holder.qty.setText(String.valueOf(food.quantity));
-        holder.image.setImageResource(food.image);
+        if (item.imageUrl != null && !item.imageUrl.isEmpty()) {
+            Glide.with(holder.itemView.getContext())
+                    .load(item.imageUrl)
+                    .into(holder.imgFood);
+        }
 
-        holder.plus.setOnClickListener(v -> {
-            food.quantity++;
-            notifyDataSetChanged();
-            listener.onCartUpdated();
+        // ✅ PLUS BUTTON
+        holder.btnPlus.setOnClickListener(v -> {
+            item.quantity++;
+            // Sync with CartManager
+            CartManager.addItem(item);
+            notifyItemChanged(position);
+            if (listener != null) listener.onQuantityChanged();
         });
 
-        holder.minus.setOnClickListener(v -> {
-            if (food.quantity > 1) {
-                food.quantity--;
+        // ✅ MINUS BUTTON
+        holder.btnMinus.setOnClickListener(v -> {
+            if (item.quantity > 1) {
+                item.quantity--;
+                // Sync with CartManager
+                CartManager.addItem(item);
+                notifyItemChanged(position);
             } else {
+                // Completely remove from both local list and CartManager
+                CartManager.removeItem(item);
                 cartList.remove(position);
+                notifyItemRemoved(position);
+                notifyItemRangeChanged(position, cartList.size());
             }
-            notifyDataSetChanged();
-            listener.onCartUpdated();
+            if (listener != null) listener.onQuantityChanged();
         });
     }
 
@@ -66,19 +83,18 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     }
 
     public static class CartViewHolder extends RecyclerView.ViewHolder {
-
-        ImageView image;
-        TextView name, price, qty, plus, minus;
+        TextView txtName, txtPrice, txtQuantity;
+        Button btnPlus, btnMinus;
+        ImageView imgFood;
 
         public CartViewHolder(@NonNull View itemView) {
             super(itemView);
-
-            image = itemView.findViewById(R.id.cartFoodImage);
-            name = itemView.findViewById(R.id.cartFoodName);
-            price = itemView.findViewById(R.id.cartFoodPrice);
-            qty = itemView.findViewById(R.id.cartQty);
-            plus = itemView.findViewById(R.id.cartPlus);
-            minus = itemView.findViewById(R.id.cartMinus);
+            imgFood = itemView.findViewById(R.id.imgFood);
+            txtName = itemView.findViewById(R.id.txtName);
+            txtPrice = itemView.findViewById(R.id.txtPrice);
+            txtQuantity = itemView.findViewById(R.id.txtQuantity);
+            btnPlus = itemView.findViewById(R.id.btnPlus);
+            btnMinus = itemView.findViewById(R.id.btnMinus);
         }
     }
 }

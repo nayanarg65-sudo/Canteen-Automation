@@ -2,38 +2,52 @@ package com.example.canteenautomation;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 public class CartManager {
 
-    private static final List<FoodModel> cartList = new ArrayList<>();
+    private static final ArrayList<FoodModel> cartItems = new ArrayList<>();
 
-    public static void updateCart(FoodModel food) {
-
-        boolean found = false;
-
-        for (FoodModel item : cartList) {
-            if (item.name.equals(food.name)) {
-                if (food.quantity == 0) {
-                    cartList.remove(item);
-                } else {
-                    item.quantity = food.quantity;
-                }
-                found = true;
-                break;
+    // ✅ ADDED: This allows the Adapter to show the correct -/+ numbers
+    public static int getItemQuantity(String itemId) {
+        for (FoodModel food : cartItems) {
+            if (food.id.equals(itemId)) {
+                return food.quantity;
             }
         }
+        return 0;
+    }
 
-        if (!found && food.quantity > 0) {
-            cartList.add(food);
+    public static void addItem(FoodModel item) {
+        for (FoodModel food : cartItems) {
+            if (food.id.equals(item.id)) {
+                food.quantity = item.quantity; // Sync quantity
+                return;
+            }
+        }
+        cartItems.add(item);
+    }
+
+    public static void removeItem(FoodModel item) {
+        Iterator<FoodModel> iterator = cartItems.iterator();
+        while (iterator.hasNext()) {
+            FoodModel food = iterator.next();
+            if (food.id.equals(item.id)) {
+                if (item.quantity <= 0) {
+                    iterator.remove();
+                } else {
+                    food.quantity = item.quantity; // Sync the reduced quantity
+                }
+                return;
+            }
         }
     }
 
-    public static List<FoodModel> getCartItems() {
-        return cartList;
+    public static ArrayList<FoodModel> getCartItems() {
+        return cartItems;
     }
 
     public static void clearCart() {
-        cartList.clear();
+        cartItems.clear();
+        // Reset quantities of all items in menu if possible
     }
 }

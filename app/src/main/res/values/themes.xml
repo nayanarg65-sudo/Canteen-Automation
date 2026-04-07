@@ -1,10 +1,10 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Base.Theme.CanteenAutomation" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/primaryColor</item>
+        <item name="colorPrimaryDark">@color/primaryDark</item>
+        <item name="android:windowBackground">@color/beige_background</item>
+        <item name="android:statusBarColor">@color/primaryDark</item>
     </style>
 
     <style name="Theme.CanteenAutomation" parent="Base.Theme.CanteenAutomation" />
 </resources>
-
