@@ -84,7 +84,7 @@ public class HomePageActivity extends AppCompatActivity {
         chipBreakfast.setOnClickListener(v -> openMenuWithCategory("Breakfast"));
         chipLunch.setOnClickListener(v -> openMenuWithCategory("Lunch"));
         chipSnacks.setOnClickListener(v -> openMenuWithCategory("Chats"));
-        chipDrinks.setOnClickListener(v -> openMenuWithCategory("Beverages"));
+        chipDrinks.setOnClickListener(v -> openMenuWithCategory("Drinks"));
 
         cardOrderNow.setOnClickListener(v -> startActivity(new Intent(this, MenuActivity.class)));
         cardHistory.setOnClickListener(v -> Toast.makeText(this, "Opening Orders...", Toast.LENGTH_SHORT).show());

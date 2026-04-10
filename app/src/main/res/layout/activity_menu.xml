@@ -67,6 +67,13 @@
                 android:layout_height="wrap_content"
                 android:text="Chats"
                 style="@style/Widget.MaterialComponents.Button.UnelevatedButton"/>
+
+            <Button
+                android:id="@+id/btnDrinks"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Drinks"
+                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"/>
         </LinearLayout>
     </HorizontalScrollView>
 

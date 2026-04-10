@@ -39,7 +39,7 @@ public class MenuActivity extends AppCompatActivity implements FoodAdapter.CartU
     ProgressBar progressBar;
     DatabaseReference database;
     BottomNavigationView bottomNavigation;
-    Button btnBreakfast, btnLunch, btnChats;
+    Button btnBreakfast, btnLunch, btnChats ,btnDrinks;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,10 +79,12 @@ public class MenuActivity extends AppCompatActivity implements FoodAdapter.CartU
         btnBreakfast = findViewById(R.id.btnBreakfast);
         btnLunch = findViewById(R.id.btnLunch);
         btnChats = findViewById(R.id.btnChats);
+        btnDrinks = findViewById(R.id.btnDrinks);
 
         btnBreakfast.setOnClickListener(v -> loadCategory("Breakfast"));
         btnLunch.setOnClickListener(v -> loadCategory("Lunch"));
         btnChats.setOnClickListener(v -> loadCategory("Chats"));
+        btnDrinks.setOnClickListener(v -> loadCategory("Drinks"));
 
         cartLayout = findViewById(R.id.cartLayout);
         txtItemCount = findViewById(R.id.txtItemCount);
@@ -188,6 +190,9 @@ public class MenuActivity extends AppCompatActivity implements FoodAdapter.CartU
 
         btnChats.setBackgroundColor(selected.equals("Chats") ? selectedBg : unselectedBg);
         btnChats.setTextColor(selected.equals("Chats") ? white : selectedBg);
+
+        btnDrinks.setBackgroundColor(selected.equals("Drinks") ? selectedBg : unselectedBg);
+        btnDrinks.setTextColor(selected.equals("Drinks") ? white : selectedBg);
     }
 
     @Override

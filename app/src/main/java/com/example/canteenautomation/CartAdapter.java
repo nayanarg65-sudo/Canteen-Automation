@@ -41,7 +41,12 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         FoodModel item = cartList.get(position);
 
         holder.txtName.setText(item.name);
-        holder.txtPrice.setText("₹" + item.price);
+
+        // ✅ UPDATED: Calculate subtotal (Price * Quantity)
+        // Convert the String price to an Integer before multiplying
+        int subtotal = Integer.parseInt(item.price) * item.quantity;
+        holder.txtPrice.setText("₹" + subtotal);
+
         holder.txtQuantity.setText(String.valueOf(item.quantity));
 
         if (item.imageUrl != null && !item.imageUrl.isEmpty()) {
