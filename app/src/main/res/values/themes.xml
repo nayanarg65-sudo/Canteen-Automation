@@ -3,8 +3,7 @@
         <item name="colorPrimary">@color/primaryColor</item>
         <item name="colorPrimaryDark">@color/primaryDark</item>
         <item name="android:windowBackground">@color/beige_background</item>
-        <item name="android:statusBarColor">@color/primaryColor</item>
-        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">@color/primaryDark</item>
     </style>
 
     <style name="Theme.CanteenAutomation" parent="Base.Theme.CanteenAutomation" />
@@ -13,7 +12,7 @@
         <item name="android:windowBackground">@color/primaryColor</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowNoTitle">true</item>
-        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowFullscreen">true</item>
         <item name="android:statusBarColor">@color/primaryColor</item>
     </style>
 </resources>
