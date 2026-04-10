@@ -7,14 +7,15 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_bms_bites_logo"
+        android:icon="@mipmap/ic_app_logo"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_bms_bites_logo_round"
+        android:roundIcon="@mipmap/ic_app_logo"
         android:supportsRtl="true"
         android:theme="@style/Theme.CanteenAutomation">
 
         <activity
             android:name=".SplashActivity"
+            android:theme="@style/Theme.App.Splash"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
