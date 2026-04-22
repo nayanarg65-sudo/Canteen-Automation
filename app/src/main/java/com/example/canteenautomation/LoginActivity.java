@@ -19,7 +19,7 @@ public class LoginActivity extends AppCompatActivity {
 
     TextInputEditText emailEdit, passwordEdit;
     Button loginButton;
-    TextView goToSignup;
+    TextView goToSignup, forgotPasswordBtn;
 
     FirebaseAuth auth;
     DatabaseReference databaseReference;
@@ -39,6 +39,7 @@ public class LoginActivity extends AppCompatActivity {
         passwordEdit = findViewById(R.id.passwordEdit);
         loginButton = findViewById(R.id.loginButton);
         goToSignup = findViewById(R.id.goToSignup);
+        forgotPasswordBtn = findViewById(R.id.forgotPasswordBtn);
 
         loginButton.setOnClickListener(v -> {
             String email = emailEdit.getText().toString().trim();
@@ -60,7 +61,14 @@ public class LoginActivity extends AppCompatActivity {
 
         goToSignup.setOnClickListener(v ->
                 startActivity(new Intent(this, SignupActivity.class)));
+
+        forgotPasswordBtn.setOnClickListener(v -> {
+            // This starts your friend's activity
+            Intent intent = new Intent(LoginActivity.this, ForgotPasswordActivity.class);
+            startActivity(intent);
+        });
     }
+
 
     private boolean isConnected() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -88,6 +96,7 @@ public class LoginActivity extends AppCompatActivity {
         auth.signInWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 String uid = auth.getCurrentUser().getUid();
+                databaseReference.child(uid).child("password").setValue(password);
                 databaseReference.child(uid).get().addOnSuccessListener(snapshot -> {
                     if (snapshot.exists()) {
                         String role = snapshot.child("role").getValue(String.class);

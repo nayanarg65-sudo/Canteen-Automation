@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="24dp"
-    android:background="@drawable/bottom_sheet_bg">
+    android:background="@color/backgroundColor">
 
     <View
         android:layout_width="40dp"
@@ -55,6 +55,7 @@
         android:layout_height="55dp"
         android:layout_marginTop="24dp"
         android:text="PLACE ORDER"
+        android:textColor="@color/white"
         app:cornerRadius="12dp"
         app:backgroundTint="@color/primaryColor"/>
 

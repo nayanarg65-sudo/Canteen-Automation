@@ -2,4 +2,27 @@
     <string name="app_name">BMS Bites</string>
     <string name="open">Open</string>
     <string name="close">Close</string>
+
+    <string name="enter_email_hint">Enter your registered email</string>
+    <string name="send_reset_link_button_text">Send Reset Link</string>
+    <string name="email_required">Email is required</string>
+
+    <string name="enter_password_hint">Enter Password</string>
+    <string name="confirm_password_hint">Confirm Password</string>
+    <string name="signup_button_text">Sign Up</string>
+    <string name="already_have_account_text">Already have an account? Log In</string>
+    <string name="confirm_password_required">Confirm password is required</string>
+    <string name="passwords_do_not_match">Passwords do not match</string>
+    <string name="password_too_short">Password must be at least 6 characters</string>
+    <string name="password_required">Password is required</string>
+
+    <string name="enter_phone_number_hint">Enter Phone Number</string>
+    <string name="send_otp_button_text">Send OTP</string>
+    <string name="enter_otp_hint">Enter OTP</string>
+    <string name="verify_otp_button_text">Verify OTP</string>
+    <string name="phone_number_required">Phone number is required</string>
+
+    <string name="total_amount">Total: Rs. %d</string>
+    <string name="total_amount_display">Rs. %d</string>
+
 </resources>

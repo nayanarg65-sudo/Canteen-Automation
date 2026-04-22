@@ -6,6 +6,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.content.SharedPreferences;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
@@ -87,6 +88,15 @@ public class SignupActivity extends AppCompatActivity {
 
                     FirebaseDatabase.getInstance().getReference("Users").child(uid).setValue(userMap)
                             .addOnSuccessListener(unused -> {
+
+                                // --- ADD THESE 4 LINES ---
+                                SharedPreferences sp = getSharedPreferences("UserData", MODE_PRIVATE);
+                                SharedPreferences.Editor editor = sp.edit();
+                                editor.putString("name", name);  // Saves the name locally
+                                editor.putString("phone", phone); // Saves the phone locally
+                                editor.apply();
+                                // -------------------------
+
                                 Toast.makeText(this, "Account Created ✅", Toast.LENGTH_SHORT).show();
                                 finish();
                             });

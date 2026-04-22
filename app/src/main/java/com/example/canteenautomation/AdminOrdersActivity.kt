@@ -51,7 +51,12 @@ class AdminOrdersActivity : AppCompatActivity() {
                     try {
                         val order = orderSnapshot.getValue(OrderModel::class.java)
                         if (order != null) {
-                            order.orderId = orderSnapshot.key ?: ""
+                            // 🚩 DELETE OR COMMENT OUT THIS LINE:
+                            // order.orderId = orderSnapshot.key ?: ""
+
+                            // ✅ LEAVE IT ALONE: The orderId is already inside the
+                            // OrderModel from when the student saved it!
+
                             orderList.add(order)
                         }
                     } catch (e: Exception) {
@@ -88,7 +93,7 @@ class AdminOrdersActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
             val order = list[position]
 
-            holder.tvId.text = "Order #${order.orderId.takeLast(5)}"
+            holder.tvId.text = "Order ID: ${order.orderId}"
             holder.tvName.text = order.customerName ?: "Student"
 
             val formattedItems = order.items.replace(", ", "\n• ").replace(",", "\n• ")
