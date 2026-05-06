@@ -42,7 +42,7 @@ class InventoryManagerActivity : AppCompatActivity() {
                 for (snap in s.children) {
                     val item = snap.getValue(FoodModel::class.java)
                     if (item != null) {
-                        item.id = snap.key ?: ""
+                        item.foodId = snap.key ?: ""
                         list.add(item)
                     }
                 }
@@ -74,13 +74,11 @@ class InventoryManagerActivity : AppCompatActivity() {
             holder.price.text = "₹${f.price}"
 
             holder.sw.setOnCheckedChangeListener(null)
-            holder.sw.isChecked = f.available
-
+            holder.sw.isChecked = f.isAvailable
             Glide.with(this@InventoryManagerActivity).load(f.imageUrl).into(holder.img)
 
             holder.sw.setOnCheckedChangeListener { _, isChecked ->
-                db.child(f.id).child("available").setValue(isChecked)
-            }
+                db.child(f.foodId).child("isAvailable").setValue(isChecked)            }
 
             holder.edit.setOnClickListener { showEdit(f) }
 
@@ -96,7 +94,7 @@ class InventoryManagerActivity : AppCompatActivity() {
             .setTitle("Delete ${f.name}?")
             .setMessage("This will permanently remove this item.")
             .setPositiveButton("Delete") { _, _ ->
-                db.child(f.id).removeValue()
+                db.child(f.foodId).removeValue()
                     .addOnSuccessListener {
                         Toast.makeText(this, "Removed Successfully", Toast.LENGTH_SHORT).show()
                     }
@@ -121,7 +119,7 @@ class InventoryManagerActivity : AppCompatActivity() {
                     "price" to p.text.toString(),
                     "imageUrl" to u.text.toString()
                 )
-                db.child(f.id).updateChildren(updates)
+                db.child(f.foodId).updateChildren(updates)
             }
             .setNegativeButton("Cancel", null)
             .show()

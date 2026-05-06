@@ -1,78 +1,72 @@
 package com.example.canteenautomation;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import android.util.Log;
-
-import java.util.HashMap; // Ensure this import is present if you use it for userData in other parts
-
-import android.widget.ProgressBar;
-import android.widget.TextView;
-
-import android.widget.Button;
-import android.content.Intent;
-
-import android.view.View;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.MutableData;
+import com.google.firebase.database.ServerValue;
+import com.google.firebase.database.Transaction;
+import com.google.firebase.database.ValueEventListener;
 
 public class OrderSuccessActivity extends AppCompatActivity {
     private static final String TAG = "OrderSuccessActivity";
 
-    ImageView tickImage;
+    private ImageView tickImage;
+    private ProgressBar loadingProgress;
+    private TextView statusTitle, subTitle;
+    private Button okButton;
 
-    ProgressBar loadingProgress;
-    TextView statusTitle, subTitle;
-
-    FirebaseAuth auth;
-    DatabaseReference ordersRef;
-    DatabaseReference tokenRef;
-
-    Button okButton;
+    private FirebaseAuth auth;
+    private DatabaseReference ordersRef;
+    private DatabaseReference tokenRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_success);
 
-        // 1. Link all Java variables to XML IDs
+        // 1. Link UI elements
         tickImage = findViewById(R.id.tickImage);
         loadingProgress = findViewById(R.id.loadingProgress);
         statusTitle = findViewById(R.id.statusTitle);
         subTitle = findViewById(R.id.statusSubtitle);
         okButton = findViewById(R.id.okButton);
 
-        // 2. INITIAL STATE: Hide the tick, the text, and the button
-        // We only want the spinning ring (loadingProgress) to show at the start
-        tickImage.setVisibility(android.view.View.GONE);
-        statusTitle.setVisibility(android.view.View.GONE);
-        subTitle.setVisibility(android.view.View.GONE);
-        okButton.setVisibility(android.view.View.GONE);
+        // 2. Initial State: Show only loading spinner
+        tickImage.setVisibility(View.GONE);
+        statusTitle.setVisibility(View.GONE);
+        subTitle.setVisibility(View.GONE);
+        okButton.setVisibility(View.GONE);
 
-        // 3. Firebase Initialization
+        // 3. Firebase Setup
         auth = FirebaseAuth.getInstance();
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         ordersRef = database.getReference("Orders");
         tokenRef = database.getReference("OrderToken");
 
-        // 4. Run your database saving logic
+        // 4. Save order to database
         saveOrderWithToken();
 
-        // 5. THE 3-SECOND TIMER LOGIC
-        new android.os.Handler().postDelayed(() -> {
-            // A. Hide the loading ring
-            loadingProgress.setVisibility(android.view.View.GONE);
+        // 5. Success Animation Timer (3 seconds)
+        new Handler().postDelayed(() -> {
+            loadingProgress.setVisibility(View.GONE);
 
-            // B. Show and animate the big tick mark
-            tickImage.setVisibility(android.view.View.VISIBLE);
+            tickImage.setVisibility(View.VISIBLE);
             tickImage.setScaleX(0f);
             tickImage.setScaleY(0f);
             tickImage.animate()
@@ -81,113 +75,87 @@ public class OrderSuccessActivity extends AppCompatActivity {
                     .setDuration(500)
                     .start();
 
-            // C. Show the success messages
-            statusTitle.setVisibility(android.view.View.VISIBLE);
+            statusTitle.setVisibility(View.VISIBLE);
             statusTitle.setText("Order Placed!");
 
-            subTitle.setVisibility(android.view.View.VISIBLE);
+            subTitle.setVisibility(View.VISIBLE);
             subTitle.setText("Please collect it from the canteen counter.");
 
-            // D. Show the OK button
-            okButton.setVisibility(android.view.View.VISIBLE);
+            okButton.setVisibility(View.VISIBLE);
+        }, 3000);
 
-        }, 3000); // 3000 milliseconds = 3 seconds
-
-        // 6. Set the click listener to go back to the previous screen
+        // 6. Navigation
         okButton.setOnClickListener(v -> {
-            // This starts the Home Activity and clears the previous screens (like the Cart)
             Intent intent = new Intent(OrderSuccessActivity.this, HomePageActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();
         });
     }
+
     private void saveOrderWithToken() {
-        if (auth.getCurrentUser() == null) {
-            Toast.makeText(this, "User not logged in. Order cannot be placed.", Toast.LENGTH_LONG).show();
-            finish();
-            return;
-        }
+        if (auth.getCurrentUser() == null) return;
 
         final String uid = auth.getCurrentUser().getUid();
         final int total = getIntent().getIntExtra("total", 0);
-        final String items = getIntent().getStringExtra("items") != null
-                ? getIntent().getStringExtra("items") : "No items";
+        final String items = getIntent().getStringExtra("items") != null ? getIntent().getStringExtra("items") : "No items";
+        final String instructions = getIntent().getStringExtra("instructions") != null ? getIntent().getStringExtra("instructions") : "";
 
-        tokenRef.runTransaction(new Transaction.Handler() {
-            @NonNull
-            @Override
-            public Transaction.Result doTransaction(@NonNull MutableData currentData) {
-                Integer current = currentData.getValue(Integer.class);
-                if (current == null) {
-                    current = 0;
-                }
-                current++;
-                currentData.setValue(current);
-                return Transaction.success(currentData);
-            }
+        // 1. First, fetch the Real Name from the Users node
+        FirebaseDatabase.getInstance().getReference("Users").child(uid)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        // Get name from DB, fallback to "Student" if not found
+                        String realName = snapshot.child("name").getValue(String.class);
+                        if (realName == null) realName = "Student";
 
-            @Override
-            public void onComplete(DatabaseError error, boolean committed, DataSnapshot snapshot) {
-                if (error != null || !committed) {
-                    Toast.makeText(OrderSuccessActivity.this, "Transaction Failed: " + (error != null ? error.getMessage() : "Unknown"), Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                        final String finalCustomerName = realName;
 
-                // 🚩 FIND THIS SECTION AND CHANGE TO THIS:
-                Integer newTokenInteger = snapshot.getValue(Integer.class);
-                final int newToken = newTokenInteger;
+                        // 2. Now proceed with the Token Transaction
+                        tokenRef.runTransaction(new Transaction.Handler() {
+                            @NonNull
+                            @Override
+                            public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                                Integer current = currentData.getValue(Integer.class);
+                                if (current == null) current = 0;
+                                current++;
+                                currentData.setValue(current);
+                                return Transaction.success(currentData);
+                            }
 
-                // 1. Initialize the model
-                OrderModel order = new OrderModel(
-                        items,
-                        total,
-                        newToken,
-                        uid,
-                        "Paid",
-                        "Pending"
-                );
+                            @Override
+                            public void onComplete(DatabaseError error, boolean committed, DataSnapshot snapshot) {
+                                if (committed) {
+                                    int newToken = snapshot.getValue(Integer.class);
+                                    DatabaseReference newOrderRef = ordersRef.push();
+                                    String pushId = newOrderRef.getKey();
 
-                // 2. Define newOrderRef BEFORE using it so it's in scope
-                DatabaseReference newOrderRef = ordersRef.push();
+                                    // 3. Create Model with Real Name and NO paymentStatus
+                                    OrderModel order = new OrderModel(
+                                            pushId != null ? pushId : "",
+                                            uid,
+                                            finalCustomerName, // REAL NAME APPLIED HERE
+                                            items,
+                                            total,
+                                            newToken,
+                                            instructions
+                                    );
 
-                // 3. Set the IDs
-                order.setOrderId(String.valueOf(newToken));
-                order.setTimestamp(ServerValue.TIMESTAMP);
+                                    // 4. Final adjustments and Save
+                                    order.setStatus("Pending");
 
-                // 4. Now save using the reference we just created
-                newOrderRef.setValue(order)
-                        .addOnSuccessListener(unused -> {
-                            String successMessage = "Order Placed! Your Token Number is: " + newToken;
-                            Toast.makeText(OrderSuccessActivity.this, successMessage, Toast.LENGTH_LONG).show();
-                            CartManager.clearCart();
-                        })
-                        .addOnFailureListener(e -> {
-                            Toast.makeText(OrderSuccessActivity.this, "Order failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    newOrderRef.setValue(order).addOnSuccessListener(unused -> {
+                                        Toast.makeText(OrderSuccessActivity.this, "Order # " + newToken + " Placed!", Toast.LENGTH_SHORT).show();
+                                        CartManager.clearCart();
+                                    });
+                                }
+                            }
                         });
+                    }
 
-                // --- KEY CHANGES START HERE ---
-
-                // Set the orderId field in the OrderModel
-                order.setOrderId(String.valueOf(newToken)); // Use the setter or direct assignment if public
-
-                // Set the timestamp using ServerValue.TIMESTAMP
-                order.setTimestamp(ServerValue.TIMESTAMP); // Use the setter or direct assignment if public
-
-                newOrderRef.setValue(order)
-                        .addOnSuccessListener(unused -> {
-                            // ✅ ADD THIS LINE HERE
-                            String successMessage = "Order Placed! Your Token Number is: " + newToken;
-
-                            Toast.makeText(OrderSuccessActivity.this, successMessage, Toast.LENGTH_LONG).show();
-
-                            CartManager.clearCart();
-                        })
-                        .addOnFailureListener(e -> {
-                            Toast.makeText(OrderSuccessActivity.this, "Order failed to save: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                        });
-                // --- KEY CHANGES END HERE ---
-            }
-        });
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {}
+                });
     }
 }

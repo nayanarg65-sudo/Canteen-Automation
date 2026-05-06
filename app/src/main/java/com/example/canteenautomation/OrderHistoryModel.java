@@ -11,6 +11,7 @@ public class OrderHistoryModel {
 
     public long timestamp;
     // Empty constructor is MANDATORY for Firebase
+    public int token;
     public OrderHistoryModel() {
     }
 

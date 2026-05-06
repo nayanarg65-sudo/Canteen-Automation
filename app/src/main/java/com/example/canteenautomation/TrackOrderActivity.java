@@ -50,19 +50,22 @@ public class TrackOrderActivity extends AppCompatActivity {
         if (auth.getCurrentUser() == null) return;
         String uid = auth.getCurrentUser().getUid();
 
-        // 1. Find the latest order for the logged-in student
         ordersDb.orderByChild("userId").equalTo(uid).limitToLast(1)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.exists()) {
                             for (DataSnapshot ds : snapshot.getChildren()) {
-                                // 2. Get the orderId (Token) which is used as the node key
-                                String token = ds.child("orderId").getValue(String.class);
+                                // Get the unique node key for background logic
+                                String firebaseKey = ds.getKey();
 
-                                if (token != null) {
-                                    tvOrderId.setText("Order ID: " + token);
-                                    listenForStatusUpdates(token);
+                                // Get the human-readable Token Number for the UI
+                                Object tokenVal = ds.child("token").getValue();
+                                String tokenDisplay = (tokenVal != null) ? tokenVal.toString() : "----";
+
+                                if (firebaseKey != null) {
+                                    tvOrderId.setText("Token Number: #" + tokenDisplay);
+                                    listenForStatusUpdates(firebaseKey);
                                 }
                             }
                         } else {
@@ -74,10 +77,8 @@ public class TrackOrderActivity extends AppCompatActivity {
                 });
     }
 
-    private void listenForStatusUpdates(String token) {
-        // 3. IMPORTANT: Your Admin app updates db.child(order.orderId)
-        // So we listen directly to that specific node name
-        ordersDb.child(token).addValueEventListener(new ValueEventListener() {
+    private void listenForStatusUpdates(String firebaseKey) {
+        ordersDb.child(firebaseKey).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
@@ -98,20 +99,14 @@ public class TrackOrderActivity extends AppCompatActivity {
         int activeColor = ContextCompat.getColor(this, R.color.primaryColor);
         int inactiveColor = Color.parseColor("#D3D3D3");
 
-        tvStatus.setText("Status: " + status);
-
-        // Step 1: Pending (matches Admin option)
+        // Logic to update the "Steppers" or Dots based on status
         if ("Pending".equalsIgnoreCase(status) || "New".equalsIgnoreCase(status)) {
             updateColors(activeColor, inactiveColor, inactiveColor, inactiveColor, inactiveColor);
             tvStatus.setText("Order Received! ⏳");
-        }
-        // Step 2: Ready (matches Admin option)
-        else if ("Ready".equalsIgnoreCase(status)) {
+        } else if ("Ready".equalsIgnoreCase(status)) {
             updateColors(activeColor, activeColor, activeColor, inactiveColor, inactiveColor);
             tvStatus.setText("Food is Ready! 🍕");
-        }
-        // Step 3: Delivered (matches Admin option)
-        else if ("Delivered".equalsIgnoreCase(status)) {
+        } else if ("Delivered".equalsIgnoreCase(status)) {
             updateColors(activeColor, activeColor, activeColor, activeColor, activeColor);
             tvStatus.setText("Order Picked Up ✅");
         }

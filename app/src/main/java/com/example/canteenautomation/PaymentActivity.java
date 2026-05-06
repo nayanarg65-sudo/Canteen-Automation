@@ -162,13 +162,23 @@ public class PaymentActivity extends AppCompatActivity implements PaymentResultL
 
         if (btnConfirmPlaceOrder != null) {
             btnConfirmPlaceOrder.setOnClickListener(v -> {
+                // 1. Get the text from the EditText before dismissing the dialog
+                String instructions = "";
+                if (editSpecialInstructions != null) {
+                    instructions = editSpecialInstructions.getText().toString().trim();
+                }
+
                 bottomSheetDialog.dismiss();
 
-                // Go to your green Success Screen
+                // 2. Prepare the Intent
                 Intent successIntent = new Intent(PaymentActivity.this, OrderSuccessActivity.class);
                 successIntent.putExtra("total", totalAmount);
                 successIntent.putExtra("items", orderedItems);
                 successIntent.putExtra("mode", "OFFLINE");
+
+                // 3. ADD THIS LINE: Pass the instructions to the next activity
+                successIntent.putExtra("instructions", instructions);
+
                 startActivity(successIntent);
                 finish();
             });

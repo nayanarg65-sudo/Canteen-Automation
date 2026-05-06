@@ -106,6 +106,7 @@ public class HomePageActivity extends AppCompatActivity {
             else if (id == R.id.nav_cart) startActivity(new Intent(this, CartActivity.class));
             else if (id == R.id.nav_track) startActivity(new Intent(this, TrackOrderActivity.class));
             else if (id == R.id.nav_history) startActivity(new Intent(this, OrderHistoryActivity.class));
+            else if (id == R.id.nav_contact) startActivity(new Intent(this, ContactUsActivity.class));
             else if (id == R.id.nav_logout) {
                 auth.signOut();
                 startActivity(new Intent(this, LoginActivity.class));
@@ -216,7 +217,7 @@ public class HomePageActivity extends AppCompatActivity {
                 for (DataSnapshot data : snapshot.getChildren()) {
                     FoodModel item = data.getValue(FoodModel.class);
                     if (item != null) {
-                        item.id = data.getKey();
+                        item.foodId = data.getKey();
                         if ("Breakfast".equals(item.category)) breakfastList.add(item);
                         else if ("Lunch".equals(item.category)) lunchList.add(item);
                         else if ("Chats".equals(item.category)) chatsList.add(item);

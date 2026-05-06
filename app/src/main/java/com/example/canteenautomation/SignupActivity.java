@@ -54,58 +54,85 @@ public class SignupActivity extends AppCompatActivity {
                 return;
             }
 
-            // 3. Phone Number Validation (10 digits)
+            // 3. Phone Number Validation
             if (phone.length() != 10) {
                 phoneEdit.setError("Enter a valid 10-digit phone number!");
                 phoneEdit.requestFocus();
                 return;
             }
 
-            // 4. Email Validation
-            if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                emailEdit.setError("Please enter a valid email address!");
-                emailEdit.requestFocus();
-                return;
-            }
+            // --- DATABASE DUPLICATE CHECK ---
+            FirebaseDatabase.getInstance().getReference("Users").get().addOnSuccessListener(snapshot -> {
+                boolean isDuplicate = false;
+                for (com.google.firebase.database.DataSnapshot ds : snapshot.getChildren()) {
+                    String existingRoll = ds.child("roll").getValue(String.class);
+                    String existingPhone = ds.child("phone").getValue(String.class);
 
-            // 5. Password Validation
-            if (password.length() < 6) {
-                passwordEdit.setError("Password must be at least 6 characters!");
-                passwordEdit.requestFocus();
-                return;
-            }
+                    if (roll.equalsIgnoreCase(existingRoll)) {
+                        rollEdit.setError("Roll number already registered!");
+                        rollEdit.requestFocus();
+                        isDuplicate = true;
+                        break;
+                    }
+                    if (phone.equals(existingPhone)) {
+                        phoneEdit.setError("Phone number already in use!");
+                        phoneEdit.requestFocus();
+                        isDuplicate = true;
+                        break;
+                    }
+                }
 
-            // Firebase Signup
-            auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    String uid = auth.getCurrentUser().getUid();
-                    HashMap<String, Object> userMap = new HashMap<>();
-                    userMap.put("name", name);
-                    userMap.put("roll", roll);
-                    userMap.put("phone", phone);
-                    userMap.put("email", email);
-                    userMap.put("role", "student");
+                if (!isDuplicate) {
+                    // Final Validations before signup
+                    if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                        emailEdit.setError("Please enter a valid email address!");
+                        return;
+                    }
+                    if (password.length() < 6) {
+                        passwordEdit.setError("Password must be at least 6 characters!");
+                        return;
+                    }
 
-                    FirebaseDatabase.getInstance().getReference("Users").child(uid).setValue(userMap)
-                            .addOnSuccessListener(unused -> {
-
-                                // --- ADD THESE 4 LINES ---
-                                SharedPreferences sp = getSharedPreferences("UserData", MODE_PRIVATE);
-                                SharedPreferences.Editor editor = sp.edit();
-                                editor.putString("name", name);  // Saves the name locally
-                                editor.putString("phone", phone); // Saves the phone locally
-                                editor.apply();
-                                // -------------------------
-
-                                Toast.makeText(this, "Account Created ✅", Toast.LENGTH_SHORT).show();
-                                finish();
-                            });
-                } else {
-                    Toast.makeText(this, "Error: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                    // Proceed to create account
+                    performFirebaseSignup(name, roll, phone, email, password);
                 }
             });
+
         });
 
         backToLogin.setOnClickListener(v -> finish());
+    }
+
+    private void performFirebaseSignup(String name, String roll, String phone, String email, String password) {
+        auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                String uid = auth.getCurrentUser().getUid();
+                HashMap<String, Object> userMap = new HashMap<>();
+                userMap.put("name", name);
+                userMap.put("roll", roll);
+                userMap.put("phone", phone);
+                userMap.put("email", email);
+                userMap.put("role", "student"); // Assigned automatically
+
+                FirebaseDatabase.getInstance().getReference("Users").child(uid).setValue(userMap)
+                        .addOnSuccessListener(unused -> {
+                            // Save to SharedPreferences for the profile page
+                            SharedPreferences sp = getSharedPreferences("UserData", MODE_PRIVATE);
+                            SharedPreferences.Editor editor = sp.edit();
+                            editor.putString("name", name);
+                            editor.putString("phone", phone);
+                            editor.apply();
+
+                            Toast.makeText(this, "Account Created ✅", Toast.LENGTH_SHORT).show();
+                            finish();
+                        });
+            } else {
+                // Show alert if the email is already in use by another account
+                new androidx.appcompat.app.AlertDialog.Builder(this)
+                        .setTitle("Signup Error")
+                        .setMessage(task.getException().getMessage())
+                        .setPositiveButton("OK", null).show();
+            }
+        });
     }
 }

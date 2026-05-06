@@ -146,7 +146,7 @@ public class MenuActivity extends AppCompatActivity implements FoodAdapter.CartU
                 for (DataSnapshot data : snapshot.getChildren()) {
                     FoodModel item = data.getValue(FoodModel.class);
                     if (item != null) {
-                        item.id = data.getKey();
+                        item.foodId = data.getKey();
                         allFoodList.add(item);
                     }
                 }

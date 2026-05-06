@@ -38,7 +38,7 @@ public class FoodAdapter extends RecyclerView.Adapter<FoodAdapter.FoodViewHolder
     public void onBindViewHolder(@NonNull FoodViewHolder holder, int position) {
         FoodModel food = foodList.get(position);
 
-        food.quantity = CartManager.getItemQuantity(food.id);
+        food.quantity = CartManager.getItemQuantity(food.foodId);
 
         holder.name.setText(food.name);
         holder.price.setText("₹" + food.price);
@@ -53,7 +53,7 @@ public class FoodAdapter extends RecyclerView.Adapter<FoodAdapter.FoodViewHolder
             holder.foodImage.setVisibility(View.GONE);
         }
 
-        if (!food.available) {
+        if (!food.isAvailable) {
             holder.addButton.setVisibility(View.VISIBLE);
             holder.addButton.setEnabled(false);
             holder.addButton.setText("Out of Stock");

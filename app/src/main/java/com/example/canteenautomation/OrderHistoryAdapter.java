@@ -31,10 +31,14 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         OrderHistoryModel order = list.get(position);
 
-        if (order.orderId != null && !order.orderId.isEmpty()) {
-            holder.tvId.setText("Order ID: " + order.orderId);
+        // Show the Token number instead of the long random ID
+        // Check if token exists, otherwise show the Order ID
+        if (order.token != 0) {
+            holder.tvId.setText("Token: #" + order.token);
+        } else if (order.orderId != null && !order.orderId.isEmpty()) {
+            holder.tvId.setText("ID: " + order.orderId);
         } else {
-            holder.tvId.setText("Order ID: ----");
+            holder.tvId.setText("Token: --");
         }
 
         // 2. Set Items and Total

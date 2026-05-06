@@ -79,6 +79,8 @@ class AdminOrdersActivity : AppCompatActivity() {
         inner class OrderViewHolder(v: View) : RecyclerView.ViewHolder(v) {
             val tvId = v.findViewById<TextView>(R.id.tvOrderId)
             val tvName = v.findViewById<TextView>(R.id.tvCustomerName)
+
+            val tvInstructions = v.findViewById<TextView>(R.id.tvOrderInstructions)
             val tvItems = v.findViewById<TextView>(R.id.tvOrderItems)
             val tvAmount = v.findViewById<TextView>(R.id.tvTotalAmount)
             val strip = v.findViewById<View>(R.id.orderStatusStrip)
@@ -93,13 +95,20 @@ class AdminOrdersActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
             val order = list[position]
 
-            holder.tvId.text = "Order ID: ${order.orderId}"
+            holder.tvId.text = "Order #${order.token}"
             holder.tvName.text = order.customerName ?: "Student"
 
             val formattedItems = order.items.replace(", ", "\n• ").replace(",", "\n• ")
             holder.tvItems.text = if (formattedItems.startsWith("• ")) formattedItems else "• $formattedItems"
 
             holder.tvAmount.text = "Total: ₹${order.total}"
+
+            if (!order.instructions.isNullOrEmpty()) {
+                holder.tvInstructions.visibility = View.VISIBLE
+                holder.tvInstructions.text = "Note: ${order.instructions}"
+            } else {
+                holder.tvInstructions.visibility = View.GONE
+            }
 
             // ✅ These now point to your colors.xml instead of hardcoded hex codes
             when (order.status) {

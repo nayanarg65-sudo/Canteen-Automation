@@ -87,6 +87,17 @@
                 android:layout_marginBottom="20dp"
                 android:minHeight="48dp"/>
 
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switchAvailable"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Set as Available"
+                android:checked="true"
+                android:textColor="@color/primaryColor"
+                android:textStyle="bold"
+                android:layout_marginBottom="20dp"
+                app:useMaterialThemeColors="true"/>
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAddItem"
                 android:text="ADD ITEM"

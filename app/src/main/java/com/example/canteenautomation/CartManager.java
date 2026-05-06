@@ -10,7 +10,7 @@ public class CartManager {
     // ✅ ADDED: This allows the Adapter to show the correct -/+ numbers
     public static int getItemQuantity(String itemId) {
         for (FoodModel food : cartItems) {
-            if (food.id.equals(itemId)) {
+            if (food.foodId.equals(itemId)) {
                 return food.quantity;
             }
         }
@@ -19,7 +19,7 @@ public class CartManager {
 
     public static void addItem(FoodModel item) {
         for (FoodModel food : cartItems) {
-            if (food.id.equals(item.id)) {
+            if (food.foodId.equals(item.foodId)) {
                 food.quantity = item.quantity; // Sync quantity
                 return;
             }
@@ -31,7 +31,7 @@ public class CartManager {
         Iterator<FoodModel> iterator = cartItems.iterator();
         while (iterator.hasNext()) {
             FoodModel food = iterator.next();
-            if (food.id.equals(item.id)) {
+            if (food.foodId.equals(item.foodId)) {
                 if (item.quantity <= 0) {
                     iterator.remove();
                 } else {

@@ -66,6 +66,17 @@
                 android:textSize="14sp"
                 android:lineSpacingExtra="4dp"/>
 
+            <TextView
+                android:id="@+id/tvOrderInstructions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Note: None"
+                android:textColor="#F44336"
+                android:textSize="13sp"
+                android:textStyle="italic"
+                android:visibility="gone" /> <!-- Hidden by default -->
+
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

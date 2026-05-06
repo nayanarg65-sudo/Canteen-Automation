@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.appbar.MaterialToolbar;
 import java.util.List;
+import android.view.View;
 
 public class CartActivity extends AppCompatActivity implements CartAdapter.CartUpdateListener {
 
@@ -25,9 +26,10 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartU
         setContentView(R.layout.activity_cart);
 
         MaterialToolbar toolbar = findViewById(R.id.cartToolbar);
+        MaterialToolbar emptyToolbar = findViewById(R.id.emptyCartToolbar);
         setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) getSupportActionBar().setTitle("My Cart");
         toolbar.setNavigationOnClickListener(v -> finish());
+        emptyToolbar.setNavigationOnClickListener(v -> finish());
 
         recyclerView = findViewById(R.id.cartRecyclerView);
         totalText = findViewById(R.id.totalAmountText);
@@ -35,16 +37,11 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartU
 
         cartList = CartManager.getCartItems();
 
-        if (cartList == null || cartList.isEmpty()) {
-            Toast.makeText(this, "Your cart is empty!", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-
         adapter = new CartAdapter(cartList, this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
+        toggleEmptyState();
         calculateTotal();
 
         placeOrderBtn.setOnClickListener(v -> {
@@ -86,7 +83,19 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartU
     @Override
     public void onCartUpdated() {
         calculateTotal();
-        if (cartList.isEmpty()) finish();
+        toggleEmptyState();
+    }
+    private void toggleEmptyState() {
+        View emptyLayout = findViewById(R.id.emptyCartLayout);
+        View mainLayout = findViewById(R.id.mainCartLayout);
+
+        if (cartList == null || cartList.isEmpty()) {
+            emptyLayout.setVisibility(View.VISIBLE);
+            mainLayout.setVisibility(View.GONE);
+        } else {
+            emptyLayout.setVisibility(View.GONE);
+            mainLayout.setVisibility(View.VISIBLE);
+        }
     }
 
     private void calculateTotal() {

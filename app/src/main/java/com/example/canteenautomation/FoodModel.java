@@ -2,44 +2,30 @@ package com.example.canteenautomation;
 
 public class FoodModel {
 
-    public String id;
+    public String foodId;      // Changed from id
     public String name;
     public String price;
     public String category;
     public String imageUrl;
-    public boolean available;
+    public boolean isAvailable; // Changed from available (Boolean)
     public int quantity;
 
     // Empty constructor (Firebase requirement)
     public FoodModel() {
-        this.available = true;
+        this.isAvailable = true; // Default
         this.quantity = 0;
     }
 
-    // ✅ Constructor that matches HomePageActivity.java exactly
-    public FoodModel(String id, String name, String price,
+    // Constructor for adding new items
+    public FoodModel(String foodId, String name, String price,
                      String category, String imageUrl,
-                     boolean available) {
-        this.id = id;
+                     boolean isAvailable) {
+        this.foodId = foodId;
         this.name = name;
         this.price = price;
         this.category = category;
         this.imageUrl = imageUrl;
-        this.available = available;
-        this.quantity = 0; // default
-    }
-
-    // Optional constructor if you want to include quantity
-    public FoodModel(String id, String name, String price,
-                     String category, String imageUrl,
-                     boolean available, int quantity) {
-        this.id = id;
-        this.name = name;
-        this.price = price;
-        this.category = category;
-        this.imageUrl = imageUrl;
-        this.available = available;
-        this.quantity = quantity;
+        this.isAvailable = isAvailable;
+        this.quantity = 0;
     }
 }
-

@@ -57,7 +57,7 @@ public class HomeFoodAdapter extends RecyclerView.Adapter<HomeFoodAdapter.ViewHo
         // Click Listeners
         holder.btnAdd.setOnClickListener(v -> {
             // Only allow adding if it is available
-            if (model.available) {
+            if (model.isAvailable) {
                 model.quantity = 1;
                 CartManager.addItem(model);
                 notifyItemChanged(position);
@@ -85,9 +85,9 @@ public class HomeFoodAdapter extends RecyclerView.Adapter<HomeFoodAdapter.ViewHo
 
     private void updateButtonUI(ViewHolder holder, FoodModel model) {
         // Get the quantity from CartManager
-        int quantity = CartManager.getItemQuantity(model.id);
+        int quantity = CartManager.getItemQuantity(model.foodId);
 
-        if (!model.available) {
+        if (!model.isAvailable) {
             // 1. OUT OF STOCK STATE (Matches FoodAdapter logic)
             holder.btnAdd.setVisibility(View.VISIBLE);
             holder.btnAdd.setEnabled(false);

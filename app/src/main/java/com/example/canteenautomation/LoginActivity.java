@@ -92,11 +92,23 @@ public class LoginActivity extends AppCompatActivity {
                 .show();
     }
 
+    private void showLoginErrorAlert(String errorMessage) {
+        new AlertDialog.Builder(this)
+                .setTitle("Login Failed")
+                .setMessage("The email or password you entered is incorrect. Please try again.")
+                .setPositiveButton("Try Again", (dialog, which) -> {
+                    passwordEdit.setText(""); // Clear password for security
+                    dialog.dismiss();
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
+
     private void performLogin(String email, String password) {
         auth.signInWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 String uid = auth.getCurrentUser().getUid();
-                databaseReference.child(uid).child("password").setValue(password);
+                //databaseReference.child(uid).child("password").setValue(password);
                 databaseReference.child(uid).get().addOnSuccessListener(snapshot -> {
                     if (snapshot.exists()) {
                         String role = snapshot.child("role").getValue(String.class);
@@ -110,7 +122,7 @@ public class LoginActivity extends AppCompatActivity {
                 });
             } else {
                 // Handle actual login errors (wrong password, etc.) while online
-                Toast.makeText(this, "Login Failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                showLoginErrorAlert(task.getException().getMessage());
             }
         });
     }
